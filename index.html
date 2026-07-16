@@ -22,7 +22,6 @@ body {
 }
 .header h1 { font-size: 1.5em; color: #333; margin-bottom: 5px; }
 .header .subtitle { font-size: 0.9em; color: #666; }
-.header .note { font-size: 0.8em; color: #999; margin-top: 4px; }
 
 .controls {
   display: flex;
@@ -57,6 +56,29 @@ body {
 .controls button:hover { background: #3458a0; }
 .controls button:active { transform: scale(0.97); }
 .controls .count { font-size: 0.85em; color: #888; margin-left: auto; }
+
+.mode-switch {
+  display: flex;
+  gap: 0;
+  background: #e8e8e8;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 15px;
+}
+.mode-switch button {
+  font-size: 0.85em;
+  padding: 8px 20px;
+  border: none;
+  cursor: pointer;
+  background: transparent;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+.mode-switch button.active {
+  background: #4472C4;
+  color: #fff;
+  font-weight: 600;
+}
 
 .card-container {
   perspective: 1000px;
@@ -141,6 +163,35 @@ body {
   border-radius: 20px;
 }
 
+.quiz-buttons {
+  display: none;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+.quiz-buttons.show { display: flex; }
+.quiz-buttons button {
+  font-size: 1em;
+  padding: 10px 25px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+  font-weight: 600;
+}
+.quiz-buttons button:active { transform: scale(0.95); }
+.btn-remember { background: #4CAF50; color: #fff; }
+.btn-remember:hover { background: #388E3C; }
+.btn-forget { background: #F44336; color: #fff; }
+.btn-forget:hover { background: #D32F2F; }
+
+.quiz-progress {
+  font-size: 0.85em;
+  color: #666;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
 .nav {
   display: flex;
   gap: 15px;
@@ -172,13 +223,58 @@ body {
   height: 6px;
   background: #e0e0e0;
   border-radius: 3px;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 .progress-bar-fill {
   height: 100%;
   background: linear-gradient(90deg, #667eea, #764ba2);
   border-radius: 3px;
   transition: width 0.3s;
+}
+
+.quiz-bar-bg {
+  width: 100%;
+  max-width: 520px;
+  height: 8px;
+  background: #e0e0e0;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  display: none;
+}
+.quiz-bar-bg.show { display: block; }
+.quiz-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4CAF50, #8BC34A);
+  border-radius: 4px;
+  transition: width 0.3s;
+}
+
+.complete-msg {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  background: #fff;
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+  text-align: center;
+  max-width: 400px;
+  margin-bottom: 15px;
+}
+.complete-msg.show { display: flex; }
+.complete-msg .big { font-size: 2em; }
+.complete-msg .msg { font-size: 1.1em; color: #333; }
+.complete-msg .sub { font-size: 0.85em; color: #999; }
+.complete-msg button {
+  font-size: 1em;
+  padding: 10px 30px;
+  border: none;
+  border-radius: 10px;
+  background: #4472C4;
+  color: #fff;
+  cursor: pointer;
+  font-family: inherit;
 }
 
 .hint { font-size: 0.8em; color: #999; text-align: center; }
@@ -196,8 +292,7 @@ body {
 
 <div class="header">
   <h1>《始得西山宴遊記》</h1>
-  <div class="subtitle">短語 Flip Card — 點擊卡片翻面</div>
-  <div class="note">▸ 前方框內為重點字詞，點按卡片查看答案</div>
+  <div class="subtitle">短語 Flip Card</div>
 </div>
 
 <div class="controls">
@@ -222,6 +317,13 @@ body {
   <span class="count" id="countDisplay">共 0 張</span>
 </div>
 
+<div class="mode-switch">
+  <button id="browseModeBtn" class="active">瀏覽模式</button>
+  <button id="quizModeBtn">隨機抽問</button>
+</div>
+
+<div class="quiz-progress" id="quizProgress"></div>
+
 <div class="card-container" id="cardContainer">
   <div class="card" id="card">
     <div class="card-face card-front">
@@ -237,6 +339,15 @@ body {
   </div>
 </div>
 
+<div class="quiz-buttons" id="quizButtons">
+  <button class="btn-remember" id="rememberBtn">✓ 記得</button>
+  <button class="btn-forget" id="forgetBtn">✗ 不記得</button>
+</div>
+
+<div class="quiz-bar-bg" id="quizBarBg">
+  <div class="quiz-bar-fill" id="quizBarFill" style="width:0%"></div>
+</div>
+
 <div class="nav">
   <button id="prevBtn">◀</button>
   <span class="progress" id="progressText">0 / 0</span>
@@ -247,7 +358,14 @@ body {
   <div class="progress-bar-fill" id="progressBar" style="width:0%"></div>
 </div>
 
-<div class="hint">點擊卡片翻面 · 方向鍵 ← → 切換 · 空白鍵翻卡</div>
+<div class="complete-msg" id="completeMsg">
+  <div class="big">🎉</div>
+  <div class="msg">全部完成！</div>
+  <div class="sub">你已掌握了所有字詞</div>
+  <button id="restartQuizBtn">重新測驗</button>
+</div>
+
+<div class="hint" id="hintText">點擊卡片翻面 · 方向鍵 ← → 切換 · 空白鍵翻卡</div>
 
 <script>
 // Enhanced card data with phrases
@@ -263,17 +381,10 @@ const ALL_CARDS = [["僇人", "自余為僇人", "僇人", "[名詞] 受刑的�
   tagColor: c[8]
 }));
 
-/**
- * Build the front HTML: put the boxed word inside a <span class="box">
- */
 function buildFrontHTML(phrase, boxed) {
   if (!phrase) return '<span class="box">' + boxed + '</span>';
-  // Try to find the boxed text within the phrase
   const idx = phrase.indexOf(boxed);
-  if (idx === -1) {
-    // Fallback: just box the keyword
-    return '<span class="box">' + boxed + '</span>';
-  }
+  if (idx === -1) return '<span class="box">' + boxed + '</span>';
   const before = phrase.substring(0, idx);
   const after = phrase.substring(idx + boxed.length);
   let result = '';
@@ -287,12 +398,16 @@ function escapeHtml(s) {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-// State
+// --- State ---
+let isQuizMode = false;
 let currentCards = [...ALL_CARDS];
 let currentIndex = 0;
 let isFlipped = false;
+let quizPool = [];
+let quizDone = 0;
+let quizTotal = 0;
 
-// DOM refs
+// --- DOM refs ---
 const card = document.getElementById('card');
 const frontText = document.getElementById('frontText');
 const frontPara = document.getElementById('frontPara');
@@ -309,7 +424,19 @@ const shuffleBtn = document.getElementById('shuffleBtn');
 const prevBtn = document.getElementById('prevBtn');
 const nextBtn = document.getElementById('nextBtn');
 const cardContainer = document.getElementById('cardContainer');
+const browseModeBtn = document.getElementById('browseModeBtn');
+const quizModeBtn = document.getElementById('quizModeBtn');
+const quizButtons = document.getElementById('quizButtons');
+const rememberBtn = document.getElementById('rememberBtn');
+const forgetBtn = document.getElementById('forgetBtn');
+const quizProgress = document.getElementById('quizProgress');
+const quizBarBg = document.getElementById('quizBarBg');
+const quizBarFill = document.getElementById('quizBarFill');
+const completeMsg = document.getElementById('completeMsg');
+const restartQuizBtn = document.getElementById('restartQuizBtn');
+const hintText = document.getElementById('hintText');
 
+// --- Browse mode ---
 function filterCards() {
   const para = paraFilter.value;
   const tag = tagFilter.value;
@@ -359,14 +486,15 @@ function renderCurrent() {
   nextBtn.disabled = currentIndex >= currentCards.length - 1;
 }
 
-function updateDisplay() {
-  renderCurrent();
-}
+function updateDisplay() { renderCurrent(); }
 
 function flipCard() {
   if (currentCards.length === 0) return;
   isFlipped = !isFlipped;
   card.classList.toggle('flipped', isFlipped);
+  if (isQuizMode && isFlipped) {
+    quizButtons.classList.add('show');
+  }
 }
 
 function goPrev() {
@@ -387,13 +515,121 @@ function goNext() {
   }
 }
 
-// Event listeners
+// --- Quiz mode ---
+function enterQuizMode() {
+  isQuizMode = true;
+  browseModeBtn.classList.remove('active');
+  quizModeBtn.classList.add('active');
+  const para = paraFilter.value;
+  const tag = tagFilter.value;
+  quizPool = ALL_CARDS.filter(c => {
+    if (para !== 'all' && c.para !== para) return false;
+    if (tag !== 'all' && c.tag !== tag) return false;
+    return true;
+  });
+  shuffle(quizPool);
+  quizDone = 0;
+  quizTotal = quizPool.length;
+  currentCards = quizPool;
+  currentIndex = 0;
+  isFlipped = false;
+  card.classList.remove('flipped');
+  quizButtons.classList.remove('show');
+  completeMsg.classList.remove('show');
+  quizBarBg.classList.add('show');
+  prevBtn.style.display = 'none';
+  nextBtn.style.display = 'none';
+  progressText.parentElement.style.display = 'none';
+  progressBar.parentElement.style.display = 'none';
+  shuffleBtn.style.display = 'none';
+  hintText.textContent = '點擊卡片翻面查看答案，然後按「記得」或「不記得」';
+  updateQuizUI();
+  renderCurrent();
+}
+
+function exitQuizMode() {
+  isQuizMode = false;
+  browseModeBtn.classList.add('active');
+  quizModeBtn.classList.remove('active');
+  quizButtons.classList.remove('show');
+  completeMsg.classList.remove('show');
+  quizBarBg.classList.remove('show');
+  prevBtn.style.display = '';
+  nextBtn.style.display = '';
+  progressText.parentElement.style.display = '';
+  progressBar.parentElement.style.display = '';
+  shuffleBtn.style.display = '';
+  hintText.textContent = '點擊卡片翻面 · 方向鍵 ← → 切換 · 空白鍵翻卡';
+  filterCards();
+}
+
+function updateQuizUI() {
+  const remaining = quizPool.length;
+  const total = quizTotal;
+  quizProgress.textContent = '已完成 ' + quizDone + ' / 共 ' + total + ' 張';
+  const pct = total > 0 ? (quizDone / total * 100) : 0;
+  quizBarFill.style.width = pct + '%';
+  countDisplay.textContent = '剩 ' + remaining + ' 張';
+}
+
+function handleRemember() {
+  if (!isQuizMode || quizPool.length === 0) return;
+  quizPool.splice(currentIndex, 1);
+  quizDone++;
+  isFlipped = false;
+  card.classList.remove('flipped');
+  quizButtons.classList.remove('show');
+  if (quizPool.length === 0) {
+    updateQuizUI();
+    showQuizComplete();
+    return;
+  }
+  if (currentIndex >= quizPool.length) currentIndex = quizPool.length - 1;
+  updateQuizUI();
+  renderCurrent();
+}
+
+function handleForget() {
+  if (!isQuizMode || quizPool.length === 0) return;
+  // Put the card back at a random position
+  const cardData = quizPool.splice(currentIndex, 1)[0];
+  const insertAt = Math.floor(Math.random() * (quizPool.length + 1));
+  quizPool.splice(insertAt, 0, cardData);
+  // Reset flip
+  isFlipped = false;
+  card.classList.remove('flipped');
+  quizButtons.classList.remove('show');
+  currentIndex = Math.floor(Math.random() * quizPool.length);
+  updateQuizUI();
+  renderCurrent();
+}
+
+function showQuizComplete() {
+  completeMsg.classList.add('show');
+  cardContainer.style.display = 'none';
+  quizButtons.classList.remove('show');
+  quizBarFill.style.width = '100%';
+  quizProgress.textContent = '已完成 ' + quizDone + ' / 共 ' + quizTotal + ' 張';
+}
+
+function restartQuiz() {
+  completeMsg.classList.remove('show');
+  cardContainer.style.display = '';
+  enterQuizMode();
+}
+
+// --- Event listeners ---
 cardContainer.addEventListener('click', flipCard);
 
-paraFilter.addEventListener('change', filterCards);
-tagFilter.addEventListener('change', filterCards);
+paraFilter.addEventListener('change', () => {
+  if (isQuizMode) enterQuizMode(); else filterCards();
+});
+tagFilter.addEventListener('change', () => {
+  if (isQuizMode) enterQuizMode(); else filterCards();
+});
 
 shuffleBtn.addEventListener('click', () => {
+  if (isQuizMode) return;
   shuffle(currentCards);
   currentIndex = 0;
   isFlipped = false;
@@ -401,14 +637,24 @@ shuffleBtn.addEventListener('click', () => {
   renderCurrent();
 });
 
+browseModeBtn.addEventListener('click', exitQuizMode);
+
+quizModeBtn.addEventListener('click', enterQuizMode);
+
+rememberBtn.addEventListener('click', handleRemember);
+forgetBtn.addEventListener('click', handleForget);
+
+restartQuizBtn.addEventListener('click', restartQuiz);
+
 prevBtn.addEventListener('click', goPrev);
 nextBtn.addEventListener('click', goNext);
 
-// Keyboard
 document.addEventListener('keydown', (e) => {
   if (e.key === 'ArrowLeft') goPrev();
   else if (e.key === 'ArrowRight') goNext();
   else if (e.key === ' ' || e.key === 'Space') { e.preventDefault(); flipCard(); }
+  else if (e.key === 'r' || e.key === 'R') handleRemember();
+  else if (e.key === 'f' || e.key === 'F') handleForget();
 });
 
 // Init
