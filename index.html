@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>《始得西山宴遊記》Flip Cards（短語版）</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: "Microsoft JhengHei", "Noto Sans TC", "PingFang TC", sans-serif;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+.header h1 { font-size: 1.5em; color: #333; margin-bottom: 5px; }
+.header .subtitle { font-size: 0.9em; color: #666; }
+.header .note { font-size: 0.8em; color: #999; margin-top: 4px; }
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  background: #fff;
+  padding: 12px 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  max-width: 800px;
+  width: 100%;
+}
+.controls label { font-size: 0.85em; color: #555; }
+.controls select, .controls button {
+  font-size: 0.85em;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: #fff;
+  cursor: pointer;
+  font-family: inherit;
+}
+.controls button {
+  background: #4472C4;
+  color: #fff;
+  border: none;
+  transition: background 0.2s;
+}
+.controls button:hover { background: #3458a0; }
+.controls button:active { transform: scale(0.97); }
+.controls .count { font-size: 0.85em; color: #888; margin-left: auto; }
+
+.card-container {
+  perspective: 1000px;
+  width: 100%;
+  max-width: 520px;
+  height: 340px;
+  margin-bottom: 20px;
+  cursor: pointer;
+}
+.card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.5s cubic-bezier(0.4, 0.0, 0.2, 1);
+  transform-style: preserve-3d;
+}
+.card.flipped { transform: rotateY(180deg); }
+.card-face {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+  text-align: center;
+}
+.card-front {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+}
+.card-front .phrase-text {
+  font-size: 2em;
+  font-weight: 700;
+  line-height: 1.6;
+  letter-spacing: 2px;
+}
+.card-front .box {
+  display: inline-block;
+  border: 3px solid #FFD700;
+  border-radius: 6px;
+  padding: 2px 8px;
+  margin: 0 2px;
+  background: rgba(255, 215, 0, 0.15);
+  color: #FFD700;
+  font-weight: 700;
+}
+.card-front .para-tag {
+  margin-top: 15px;
+  font-size: 0.8em;
+  opacity: 0.7;
+}
+.card-back {
+  background: #fff;
+  color: #333;
+  transform: rotateY(180deg);
+}
+.card-back .pos-tag {
+  font-size: 0.8em;
+  color: #666;
+  background: #f0f0f0;
+  padding: 3px 10px;
+  border-radius: 20px;
+  margin-bottom: 12px;
+}
+.card-back .meaning { font-size: 1.5em; font-weight: 600; margin-bottom: 10px; line-height: 1.4; }
+.card-back .detail {
+  font-size: 0.9em;
+  color: #666;
+  line-height: 1.5;
+  max-width: 90%;
+}
+.card-back .cat-tag {
+  margin-top: 15px;
+  font-size: 0.75em;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+.nav {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  margin-bottom: 15px;
+}
+.nav button {
+  font-size: 1.5em;
+  padding: 8px 20px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  background: #4472C4;
+  color: #fff;
+  transition: background 0.2s;
+}
+.nav button:hover { background: #3458a0; }
+.nav button:disabled { background: #ccc; cursor: default; }
+.nav .progress {
+  font-size: 1em;
+  color: #555;
+  min-width: 80px;
+  text-align: center;
+}
+
+.progress-bar-bg {
+  width: 100%;
+  max-width: 520px;
+  height: 6px;
+  background: #e0e0e0;
+  border-radius: 3px;
+  margin-bottom: 20px;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  border-radius: 3px;
+  transition: width 0.3s;
+}
+
+.hint { font-size: 0.8em; color: #999; text-align: center; }
+
+@media (max-width: 600px) {
+  .card-container { height: 280px; }
+  .card-front .phrase-text { font-size: 1.5em; }
+  .card-back .meaning { font-size: 1.2em; }
+  .controls { flex-direction: column; }
+  .controls .count { margin-left: 0; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>《始得西山宴遊記》</h1>
+  <div class="subtitle">短語 Flip Card — 點擊卡片翻面</div>
+  <div class="note">▸ 前方框內為重點字詞，點按卡片查看答案</div>
+</div>
+
+<div class="controls">
+  <label>段落：</label>
+  <select id="paraFilter">
+    <option value="all">全部段落</option>
+    <option value="一">第一段：遊西山前</option>
+    <option value="二">第二段：遊西山經過</option>
+    <option value="三">第三段：宴遊感受</option>
+  </select>
+  <label>分類：</label>
+  <select id="tagFilter">
+    <option value="all">全部</option>
+    <option value="必考字">● 必考字</option>
+    <option value="通假字">◆ 通假字</option>
+    <option value="詞類活用">★ 詞類活用</option>
+    <option value="一詞多義">▲ 一詞多義</option>
+    <option value="重要字詞">■ 重要字詞</option>
+    <option value="特殊句式">◆ 特殊句式</option>
+  </select>
+  <button id="shuffleBtn">隨機</button>
+  <span class="count" id="countDisplay">共 0 張</span>
+</div>
+
+<div class="card-container" id="cardContainer">
+  <div class="card" id="card">
+    <div class="card-face card-front">
+      <div class="phrase-text" id="frontText">—</div>
+      <div class="para-tag" id="frontPara">—</div>
+    </div>
+    <div class="card-face card-back">
+      <div class="pos-tag" id="backPos">—</div>
+      <div class="meaning" id="backMeaning">—</div>
+      <div class="detail" id="backDetail">—</div>
+      <div class="cat-tag" id="backTag">—</div>
+    </div>
+  </div>
+</div>
+
+<div class="nav">
+  <button id="prevBtn">◀</button>
+  <span class="progress" id="progressText">0 / 0</span>
+  <button id="nextBtn">▶</button>
+</div>
+
+<div class="progress-bar-bg">
+  <div class="progress-bar-fill" id="progressBar" style="width:0%"></div>
+</div>
+
+<div class="hint">點擊卡片翻面 · 方向鍵 ← → 切換 · 空白鍵翻卡</div>
+
+<script>
+// Enhanced card data with phrases
+const ALL_CARDS = [["僇人", "自余為僇人", "僇人", "[名詞] 受刑的人，即罪人", "僇，通「戮」，恥辱", "一", "第一段：遊西山前", "通假字", {"bg": "#D0E8FF", "fg": "#0066CC"}], ["是州", "居是州", "是州", "[名詞] 這個州，指永州", "是：指示代詞", "一", "第一段：遊西山前", "重要字詞", {"bg": "#EEEEEE", "fg": "#333333"}], ["恆", "恆惴慄", "恆", "[副詞] 常常", "", "一", "第一段：遊西山前", "必考字", {"bg": "#FFE0E0", "fg": "#CC0000"}], ["惴慄", "恆惴慄", "惴慄", "[形容詞] 恐懼不安", "惴：恐懼；慄：發抖", "一", "第一段：遊西山前", "必考字", {"bg": "#FFE0E0", "fg": "#CC0000"}], ["其", "其隙也", "其", "[連詞] 如果（表假設）", "非代詞用法，注意辨析", "一", "第一段：遊西山前", "一詞多義", {"bg": "#FFF8D0", "fg": "#996600"}], ["隙／隟", "其隙也", "隙", "[名詞] 空閒時間", "指公務之暇", "一", "第一段：遊西山前", "重要字詞", {"bg": "#EEEEEE", "fg": "#333333"}], ["施施", "施施而行", "施施", "[形容詞] 慢步緩行的樣子", "", "一", "第一段：遊西山前", "重要字詞", {"bg": "#EEEEEE", "fg": "#333333"}], ["漫漫", "漫漫而遊", "漫漫", "[形容詞] 不受拘束的樣子", "", "一", "第一段：遊西山前", "重要字詞", {"bg": "#EEEEEE", "fg": "#333333"}], ["日", "日與其徒", "日", "[名詞作狀語] 每天", "時間名詞用作狀語", "一", "第一段：遊西山前", "詞類活用", {"bg": "#D0F0D0", "fg": "#006600"}], ["迴谿", "窮迴谿", "迴谿", "[名詞] 曲折溪流", "谿同「溪」", "一", "第一段：遊西山前", "重要字詞", {"bg": "#EEEEEE", "fg": "#333333"}], ["窮", "窮迴谿", "窮", "[動詞] 走到盡頭", "此處作動詞用，與題目「始得」呼應", "一", "第一段：遊西山前", "一詞多義", {"bg": "#FFF8D0", "fg": "#996600"}], ["披草", "披草而坐", "披草", "[動詞短語] 分開草", "披：用手分開", "一", "第一段：遊西山前", "重要字詞", {"bg": "#EEEEEE", "fg": "#333333"}], ["傾壼", "傾壼而醉", "傾壼", "[動詞短語] 倒盡壺裏的酒", "傾：倒出來", "一", "第一段：遊西山前", "必考字", {"bg": "#FFE0E0", "fg": "#CC0000"}], ["更相", "更相枕以臥", "更相", "[副詞] 互相", "", "一", "第一段：遊西山前", "重要字詞", {"bg": "#EEEEEE", "fg": "#333333"}], ["枕", "更相枕以臥", "枕", "[名詞作動詞] 以……為枕，即頭枕著", "名詞活用為動詞", "一", "第一段：遊西山前", "詞類活用", {"bg": "#D0F0D0", "fg": "#006600"}], ["極", "意有所極", "極", "[動詞] 至，嚮往", "", "一", "第一段：遊西山前", "必考字", {"bg": "#FFE0E0", "fg": "#CC0000"}], ["趣", "夢亦同趣", "趣", "[動詞] 通「趨」，往，赴", "通假字", "一", "第一段：遊西山前", "通假字", {"bg": "#D0E8FF", "fg": "#0066CC"}], ["覺", "覺而起", "覺", "[動詞] 睡醒", "", "一", "第一段：遊西山前", "重要字詞", {"bg": "#EEEEEE", "fg": "#333333"}], ["異態", "山水有異態者", "異態", "[名詞] 奇特的形狀", "", "一", "第一段：遊西山前", "重要字詞", {"bg": "#EEEEEE", "fg": "#333333"}], ["未始", "而未始知西山之怪特", "未始", "[副詞] 未曾", "", "一", "第一段：遊西山前", "必考字", {"bg": "#FFE0E0", "fg": "#CC0000"}], ["怪特", "西山之怪特", "怪特", "[形容詞] 奇異特別", "", "一", "第一段：遊西山前", "重要字詞", {"bg": "#EEEEEE", "fg": "#333333"}], ["因", "因坐法華西亭", "因", "[介詞] 以，由於", "", "二", "第二段：遊西山經過", "重要字詞", {"bg": "#EEEEEE", "fg": "#333333"}], ["始", "始指異之", "始", "[副詞] 才", "與題目「始得」呼應", "二", "第二段：遊西山經過", "必考字", {"bg": "#FFE0E0", "fg": "#CC0000"}], ["指異之", "始指異之", "指異之", "[動詞短語] 指着它覺得它奇特", "異：意動用法", "二", "第二段：遊西山經過", "詞類活用", {"bg": "#D0F0D0", "fg": "#006600"}], ["遂", "遂命僕人", "遂", "[連詞] 於是", "", "二", "第二段：遊西山經過", "重要字詞", {"bg": "#EEEEEE", "fg": "#333333"}], ["緣", "緣染溪", "緣", "[介詞] 沿着", "", "二", "第二段：遊西山經過", "必考字", {"bg": "#FFE0E0", "fg": "#CC0000"}], ["斫", "斫榛莽", "斫", "[動詞] 砍伐", "", "二", "第二段：遊西山經過", "必考字", {"bg": "#FFE0E0", "fg": "#CC0000"}], ["遨", "箕踞而遨", "遨", "[動詞] 遊賞（用眼睛四處張望）", "", "二", "第二段：遊西山經過", "重要字詞", {"bg": "#EEEEEE", "fg": "#333333"}], ["衽席", "皆在衽席之下", "衽席", "[名詞] 坐墊、席子", "", "二", "第二段：遊西山經過", "必考字", {"bg": "#FFE0E0", "fg": "#CC0000"}], ["岈然", "岈然窪然", "岈然", "[形容詞] 山勢高峻的樣子", "承「高」", "二", "第二段：遊西山經過", "必考字", {"bg": "#FFE0E0", "fg": "#CC0000"}], ["窪然", "岈然窪然", "窪然", "[形容詞] 低陷的樣子", "承「下」", "二", "第二段：遊西山經過", "必考字", {"bg": "#FFE0E0", "fg": "#CC0000"}], ["垤", "若垤若穴", "垤", "[名詞] 小土堆（蟻封）", "", "二", "第二段：遊西山經過", "必考字", {"bg": "#FFE0E0", "fg": "#CC0000"}], ["尺寸千里", "尺寸千里", "尺寸千里", "[短語] 眼前尺寸之間，實際相隔千里", "極言西山之高", "二", "第二段：遊西山經過", "必考字", {"bg": "#FFE0E0", "fg": "#CC0000"}], ["攢", "攢蹙累積", "攢", "[動詞] 聚集在一起", "", "二", "第二段：遊西山經過", "重要字詞", {"bg": "#EEEEEE", "fg": "#333333"}], ["蹙", "攢蹙累積", "蹙", "[動詞] 緊縮在一起", "", "二", "第二段：遊西山經過", "重要字詞", {"bg": "#EEEEEE", "fg": "#333333"}], ["莫得", "莫得遯隱", "莫得", "[副詞短語] 沒有什麼能夠", "莫：沒有什麼；得：能", "二", "第二段：遊西山經過", "必考字", {"bg": "#FFE0E0", "fg": "#CC0000"}], ["遯隱", "莫得遯隱", "遯隱", "[動詞] 隱藏", "遯，同「遁」", "二", "第二段：遊西山經過", "重要字詞", {"bg": "#EEEEEE", "fg": "#333333"}], ["縈青繚白", "縈青繚白", "縈青繚白", "[短語] 青山縈迴，白水繚繞", "主謂式變動賓式", "二", "第二段：遊西山經過", "特殊句式", {"bg": "#E8D5F5", "fg": "#660099"}], ["際", "外與天際", "際", "[動詞] 接近、交會", "", "二", "第二段：遊西山經過", "一詞多義", {"bg": "#FFF8D0", "fg": "#996600"}], ["特立", "是山之特立", "特立", "[形容詞] 特別突出", "", "二", "第二段：遊西山經過", "必考字", {"bg": "#FFE0E0", "fg": "#CC0000"}], ["培塿", "不與培塿為類", "培塿", "[名詞] 小土丘（比喻平庸世俗）", "", "二", "第二段：遊西山經過", "必考字", {"bg": "#FFE0E0", "fg": "#CC0000"}], ["悠悠乎", "悠悠乎與灝氣俱", "悠悠乎", "[形容詞] 遼闊浩渺的樣子", "描寫空間廣大", "二", "第二段：遊西山經過", "重要字詞", {"bg": "#EEEEEE", "fg": "#333333"}], ["灝氣", "與灝氣俱", "灝氣", "[名詞] 同「浩氣」，天地間的大氣", "灝，同「浩」", "二", "第二段：遊西山經過", "通假字", {"bg": "#D0E8FF", "fg": "#0066CC"}], ["俱", "與灝氣俱", "俱", "[動詞] 在一起", "", "二", "第二段：遊西山經過", "重要字詞", {"bg": "#EEEEEE", "fg": "#333333"}], ["涯", "而莫得其涯", "涯", "[名詞] 邊際", "", "二", "第二段：遊西山經過", "重要字詞", {"bg": "#EEEEEE", "fg": "#333333"}], ["洋洋乎", "洋洋乎與造物者遊", "洋洋乎", "[形容詞] 悠然自得、廣闊無際的樣子", "描寫時間永恆", "二", "第二段：遊西山經過", "重要字詞", {"bg": "#EEEEEE", "fg": "#333333"}], ["造物者", "與造物者遊", "造物者", "[名詞] 創造萬物的天地，大自然", "", "二", "第二段：遊西山經過", "必考字", {"bg": "#FFE0E0", "fg": "#CC0000"}], ["引觴", "引觴滿酌", "引觴", "[動詞短語] 拿起酒杯", "", "三", "第三段：宴遊感受", "必考字", {"bg": "#FFE0E0", "fg": "#CC0000"}], ["滿酌", "引觴滿酌", "滿酌", "[動詞短語] 斟滿酒", "", "三", "第三段：宴遊感受", "重要字詞", {"bg": "#EEEEEE", "fg": "#333333"}], ["頹然", "頹然就醉", "頹然", "[形容詞] 東倒西歪地（醉倒的樣子）", "頹：跌倒", "三", "第三段：宴遊感受", "必考字", {"bg": "#FFE0E0", "fg": "#CC0000"}], ["就", "頹然就醉", "就", "[動詞] 接近，進入（陷入醉態）", "", "三", "第三段：宴遊感受", "一詞多義", {"bg": "#FFF8D0", "fg": "#996600"}], ["蒼然", "蒼然暮色", "蒼然", "[形容詞] 灰暗的樣子（形容傍晚天色）", "", "三", "第三段：宴遊感受", "重要字詞", {"bg": "#EEEEEE", "fg": "#333333"}], ["猶", "而猶不欲歸", "猶", "[副詞] 還，仍然", "", "三", "第三段：宴遊感受", "重要字詞", {"bg": "#EEEEEE", "fg": "#333333"}], ["心凝", "心凝形釋", "心凝", "[動詞短語] 思想停止了（不再想任何事情）", "", "三", "第三段：宴遊感受", "必考字", {"bg": "#FFE0E0", "fg": "#CC0000"}], ["形釋", "心凝形釋", "形釋", "[動詞短語] 形體消散了（忘掉自己的存在）", "", "三", "第三段：宴遊感受", "必考字", {"bg": "#FFE0E0", "fg": "#CC0000"}], ["萬化", "與萬化冥合", "萬化", "[名詞] 萬物變化，指自然界萬物", "", "三", "第三段：宴遊感受", "必考字", {"bg": "#FFE0E0", "fg": "#CC0000"}], ["冥合", "與萬化冥合", "冥合", "[動詞] 不知不覺地融合為一體", "", "三", "第三段：宴遊感受", "必考字", {"bg": "#FFE0E0", "fg": "#CC0000"}], ["嚮", "吾嚮之未始遊", "嚮", "[名詞] 從前／以前", "與今義「方向」不同", "三", "第三段：宴遊感受", "一詞多義", {"bg": "#FFF8D0", "fg": "#996600"}], ["於是", "遊於是乎始", "於是", "[介詞短語] 從這裡／從此", "與現代漢語「於是」不同", "三", "第三段：宴遊感受", "一詞多義", {"bg": "#FFF8D0", "fg": "#996600"}], ["誌", "故為之文以誌", "誌", "[動詞] 記載（誌同「志」）", "", "三", "第三段：宴遊感受", "必考字", {"bg": "#FFE0E0", "fg": "#CC0000"}]].map(c => ({
+  front: c[0],
+  phrase: c[1],
+  boxed: c[2],
+  back: c[3],
+  detail: c[4],
+  para: c[5],
+  paraLabel: c[6],
+  tag: c[7],
+  tagColor: c[8]
+}));
+
+/**
+ * Build the front HTML: put the boxed word inside a <span class="box">
+ */
+function buildFrontHTML(phrase, boxed) {
+  if (!phrase) return '<span class="box">' + boxed + '</span>';
+  // Try to find the boxed text within the phrase
+  const idx = phrase.indexOf(boxed);
+  if (idx === -1) {
+    // Fallback: just box the keyword
+    return '<span class="box">' + boxed + '</span>';
+  }
+  const before = phrase.substring(0, idx);
+  const after = phrase.substring(idx + boxed.length);
+  let result = '';
+  if (before) result += escapeHtml(before);
+  result += '<span class="box">' + escapeHtml(boxed) + '</span>';
+  if (after) result += escapeHtml(after);
+  return result;
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// State
+let currentCards = [...ALL_CARDS];
+let currentIndex = 0;
+let isFlipped = false;
+
+// DOM refs
+const card = document.getElementById('card');
+const frontText = document.getElementById('frontText');
+const frontPara = document.getElementById('frontPara');
+const backPos = document.getElementById('backPos');
+const backMeaning = document.getElementById('backMeaning');
+const backDetail = document.getElementById('backDetail');
+const backTag = document.getElementById('backTag');
+const progressText = document.getElementById('progressText');
+const progressBar = document.getElementById('progressBar');
+const countDisplay = document.getElementById('countDisplay');
+const paraFilter = document.getElementById('paraFilter');
+const tagFilter = document.getElementById('tagFilter');
+const shuffleBtn = document.getElementById('shuffleBtn');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const cardContainer = document.getElementById('cardContainer');
+
+function filterCards() {
+  const para = paraFilter.value;
+  const tag = tagFilter.value;
+  currentCards = ALL_CARDS.filter(c => {
+    if (para !== 'all' && c.para !== para) return false;
+    if (tag !== 'all' && c.tag !== tag) return false;
+    return true;
+  });
+  currentIndex = 0;
+  isFlipped = false;
+  card.classList.remove('flipped');
+  updateDisplay();
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function renderCurrent() {
+  if (currentCards.length === 0) {
+    frontText.innerHTML = '—';
+    frontPara.textContent = '沒有符合的卡片';
+    backPos.textContent = '—';
+    backMeaning.textContent = '—';
+    backDetail.textContent = '—';
+    backTag.textContent = '—';
+    return;
+  }
+  const c = currentCards[currentIndex];
+  frontText.innerHTML = buildFrontHTML(c.phrase, c.boxed);
+  frontPara.textContent = c.paraLabel;
+  backPos.textContent = c.back.match(/^\[([^\]]+)\]/)?.[1] || '';
+  backMeaning.textContent = c.back.replace(/^\[[^\]]+\]\s*/, '');
+  backDetail.textContent = c.detail || '';
+  backTag.textContent = c.tag;
+  backTag.style.background = c.tagColor.bg;
+  backTag.style.color = c.tagColor.fg;
+  progressText.textContent = (currentIndex + 1) + ' / ' + currentCards.length;
+  const pct = currentCards.length > 0 ? ((currentIndex + 1) / currentCards.length * 100) : 0;
+  progressBar.style.width = pct + '%';
+  countDisplay.textContent = '共 ' + currentCards.length + ' 張';
+  prevBtn.disabled = currentIndex === 0;
+  nextBtn.disabled = currentIndex >= currentCards.length - 1;
+}
+
+function updateDisplay() {
+  renderCurrent();
+}
+
+function flipCard() {
+  if (currentCards.length === 0) return;
+  isFlipped = !isFlipped;
+  card.classList.toggle('flipped', isFlipped);
+}
+
+function goPrev() {
+  if (currentIndex > 0) {
+    currentIndex--;
+    isFlipped = false;
+    card.classList.remove('flipped');
+    renderCurrent();
+  }
+}
+
+function goNext() {
+  if (currentIndex < currentCards.length - 1) {
+    currentIndex++;
+    isFlipped = false;
+    card.classList.remove('flipped');
+    renderCurrent();
+  }
+}
+
+// Event listeners
+cardContainer.addEventListener('click', flipCard);
+
+paraFilter.addEventListener('change', filterCards);
+tagFilter.addEventListener('change', filterCards);
+
+shuffleBtn.addEventListener('click', () => {
+  shuffle(currentCards);
+  currentIndex = 0;
+  isFlipped = false;
+  card.classList.remove('flipped');
+  renderCurrent();
+});
+
+prevBtn.addEventListener('click', goPrev);
+nextBtn.addEventListener('click', goNext);
+
+// Keyboard
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowLeft') goPrev();
+  else if (e.key === 'ArrowRight') goNext();
+  else if (e.key === ' ' || e.key === 'Space') { e.preventDefault(); flipCard(); }
+});
+
+// Init
+filterCards();
+</script>
+</body>
+</html>
