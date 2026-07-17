@@ -156,13 +156,6 @@ body {
   line-height: 1.5;
   max-width: 90%;
 }
-.card-back .cat-tag {
-  margin-top: 15px;
-  font-size: 0.75em;
-  padding: 3px 10px;
-  border-radius: 20px;
-}
-
 .quiz-buttons {
   display: none;
   gap: 15px;
@@ -334,7 +327,7 @@ body {
       <div class="pos-tag" id="backPos">—</div>
       <div class="meaning" id="backMeaning">—</div>
       <div class="detail" id="backDetail">—</div>
-      <div class="cat-tag" id="backTag">—</div>
+
     </div>
   </div>
 </div>
@@ -414,7 +407,6 @@ const frontPara = document.getElementById('frontPara');
 const backPos = document.getElementById('backPos');
 const backMeaning = document.getElementById('backMeaning');
 const backDetail = document.getElementById('backDetail');
-const backTag = document.getElementById('backTag');
 const progressText = document.getElementById('progressText');
 const progressBar = document.getElementById('progressBar');
 const countDisplay = document.getElementById('countDisplay');
@@ -475,9 +467,6 @@ function renderCurrent() {
   backPos.textContent = c.back.match(/^\[([^\]]+)\]/)?.[1] || '';
   backMeaning.textContent = c.back.replace(/^\[[^\]]+\]\s*/, '');
   backDetail.textContent = c.detail || '';
-  backTag.textContent = c.tag;
-  backTag.style.background = c.tagColor.bg;
-  backTag.style.color = c.tagColor.fg;
   progressText.textContent = (currentIndex + 1) + ' / ' + currentCards.length;
   const pct = currentCards.length > 0 ? ((currentIndex + 1) / currentCards.length * 100) : 0;
   progressBar.style.width = pct + '%';
