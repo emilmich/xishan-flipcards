@@ -296,16 +296,7 @@ body {
     <option value="二">第二段：遊西山經過</option>
     <option value="三">第三段：宴遊感受</option>
   </select>
-  <label>分類：</label>
-  <select id="tagFilter">
-    <option value="all">全部</option>
-    <option value="必考字">● 必考字</option>
-    <option value="通假字">◆ 通假字</option>
-    <option value="詞類活用">★ 詞類活用</option>
-    <option value="一詞多義">▲ 一詞多義</option>
-    <option value="重要字詞">■ 重要字詞</option>
-    <option value="特殊句式">◆ 特殊句式</option>
-  </select>
+
   <button id="shuffleBtn">隨機</button>
   <span class="count" id="countDisplay">共 0 張</span>
 </div>
@@ -411,7 +402,6 @@ const progressText = document.getElementById('progressText');
 const progressBar = document.getElementById('progressBar');
 const countDisplay = document.getElementById('countDisplay');
 const paraFilter = document.getElementById('paraFilter');
-const tagFilter = document.getElementById('tagFilter');
 const shuffleBtn = document.getElementById('shuffleBtn');
 const prevBtn = document.getElementById('prevBtn');
 const nextBtn = document.getElementById('nextBtn');
@@ -431,10 +421,8 @@ const hintText = document.getElementById('hintText');
 // --- Browse mode ---
 function filterCards() {
   const para = paraFilter.value;
-  const tag = tagFilter.value;
   currentCards = ALL_CARDS.filter(c => {
     if (para !== 'all' && c.para !== para) return false;
-    if (tag !== 'all' && c.tag !== tag) return false;
     return true;
   });
   currentIndex = 0;
@@ -458,7 +446,6 @@ function renderCurrent() {
     backPos.textContent = '—';
     backMeaning.textContent = '—';
     backDetail.textContent = '—';
-    backTag.textContent = '—';
     return;
   }
   const c = currentCards[currentIndex];
@@ -510,10 +497,8 @@ function enterQuizMode() {
   browseModeBtn.classList.remove('active');
   quizModeBtn.classList.add('active');
   const para = paraFilter.value;
-  const tag = tagFilter.value;
   quizPool = ALL_CARDS.filter(c => {
     if (para !== 'all' && c.para !== para) return false;
-    if (tag !== 'all' && c.tag !== tag) return false;
     return true;
   });
   shuffle(quizPool);
@@ -611,9 +596,6 @@ function restartQuiz() {
 cardContainer.addEventListener('click', flipCard);
 
 paraFilter.addEventListener('change', () => {
-  if (isQuizMode) enterQuizMode(); else filterCards();
-});
-tagFilter.addEventListener('change', () => {
   if (isQuizMode) enterQuizMode(); else filterCards();
 });
 
